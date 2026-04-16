@@ -1,0 +1,40 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Drone Mission Planner</title>
+</head>
+<body>
+
+  <h2>🚁 Drone Mission Planner</h2>
+
+  <textarea id="inputText" rows="4" cols="50" placeholder="Enter instruction..."></textarea>
+  <br><br>
+
+  <button onclick="sendData()">Generate Plan</button>
+
+  <h3>Output:</h3>
+  <pre id="output"></pre>
+
+  <script>
+    async function sendData() {
+      const text = document.getElementById("inputText").value;
+
+      const response = await fetch("http://localhost:5000/parse", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ text })
+      });
+
+      const data = await response.json();
+
+      document.getElementById("output").textContent =
+        JSON.stringify(data, null, 2);
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AeroSync Pro | Intelligence-Driven Mission Command</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Leaflet mapping -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-mode">
+    <div id="app-container">
+        <!-- Dashboard Sidebar -->
+        <aside id="sidebar">
+            <header class="sidebar-header">
+                <div class="logo">
+                    <span class="icon">🛸</span>
+                    <h1>AeroSync</h1>
+                </div>
+                <p class="tagline">Phase 2 Intelligence Engine</p>
+            </header>
+
+            <!-- Warning Banner -->
+            <div id="status-alert" class="alert-banner hidden">
+                <span id="alert-msg">MISSION UNSAFE: Zone Violation</span>
+            </div>
+
+            <section class="mission-input-section">
+                <div class="section-title"><span>Mission Intelligence</span></div>
+                <div class="input-wrapper">
+                    <textarea id="mission-input" placeholder="e.g., Survey the northern field at 40m, avoid restricted east zone..."></textarea>
+                    <button id="generate-mission-btn" class="primary-btn">Initialize Smart Planning</button>
+                </div>
+            </section>
+
+            <section class="drone-specs-section">
+                <div class="section-title"><span>Configuration & Toggles</span></div>
+                <div class="specs-grid">
+                    <div class="spec-input">
+                        <label>Max Alt (m)</label>
+                        <input type="number" id="max-alt" value="120">
+                    </div>
+                    <div class="spec-input">
+                        <label>Payload (kg)</label>
+                        <input type="number" id="payload" value="2.5">
+                    </div>
+                    <div class="spec-input">
+                        <label>Battery (min)</label>
+                        <input type="number" id="battery-life" value="45">
+                    </div>
+                    <div class="spec-input">
+                        <label>Speed (m/s)</label>
+                        <input type="number" id="speed-set" value="8">
+                    </div>
+                </div>
+                
+                <div class="layer-toggles">
+                    <div class="toggle-item">
+                        <input type="checkbox" id="toggle-nfz" checked>
+                        <label for="toggle-nfz">Restricted Zones</label>
+                    </div>
+                    <div class="toggle-item">
+                        <input type="checkbox" id="toggle-waypoints" checked>
+                        <label for="toggle-waypoints">Waypoint IDs</label>
+                    </div>
+                </div>
+            </section>
+
+            <section id="validation-panel" class="validation-section hidden">
+                <div class="section-title"><span>Risk Analysis Report</span></div>
+                <div id="validation-report"></div>
+            </section>
+
+            <div id="export-controls" class="export-section hidden">
+                <button id="start-simulation-btn" class="accent-btn">Execute Mission Path</button>
+                <button id="export-mavlink-btn" class="secondary-btn">Export Plan</button>
+            </div>
+        </aside>
+
+        <!-- Main Map Area -->
+        <main id="main-interface">
+            <div id="map"></div>
+            
+            <div class="map-overlays">
+                <div class="status-badge" id="mission-status-badge">
+                    <span class="pulse" id="status-pulse"></span>
+                    <span id="status-text">System Standby</span>
+                </div>
+                
+                <div class="view-controls">
+                    <button class="map-tool-btn" id="toggle-map-style" title="Toggle Satellite">🌍</button>
+                    <button class="map-tool-btn" id="center-map-btn" title="Center View">📍</button>
+                </div>
+
+                <!-- Dynamic HUD during simulation -->
+                <div class="mission-stats-hud">
+                    <div class="stat-item">
+                        <span class="label">REMAINING DIST</span>
+                        <span class="value" id="stat-distance">0.00 km</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="label">EST. ENDTIME</span>
+                        <span class="value" id="stat-time">-- : --</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="label">REAL-TIME BATTERY</span>
+                        <span class="value" id="stat-battery">100%</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts using ESM Modules -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script src="app.js" type="module"></script>
+</body>
+</html>

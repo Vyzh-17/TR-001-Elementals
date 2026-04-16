@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aerosync</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- HEADER -->
+        <header class="app-header">
+            <div class="logo">
+                <span class="icon">🚁</span>
+                <h1>Aero<span class="accent">sync</span></h1>
+            </div>
+            <div class="status-indicator">
+                <div class="status-dot online"></div>
+                <span>SYSTEM ONLINE</span>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- LEFT PANEL: INPUT -->
+            <section class="control-panel glass-panel">
+                <div class="panel-header">
+                    <h2>Mission Parameters</h2>
+                </div>
+                
+                <form id="mission-form">
+                    <div class="form-group box-glow">
+                        <label for="mission-description">Mission Description</label>
+                        <textarea id="mission-description" rows="4" placeholder="E.g., Conduct an aerial survey of the downtown skyscraper zone to identify thermal leaks. Avoid the restricted airspace near the stadium." required></textarea>
+                    </div>
+
+                    <div class="specs-grid">
+                        <div class="form-group">
+                            <label for="max-altitude">Max Altitude (m)</label>
+                            <input type="number" id="max-altitude" value="120" min="10" max="500">
+                        </div>
+                        <div class="form-group">
+                            <label for="max-speed">Max Speed (m/s)</label>
+                            <input type="number" id="max-speed" value="15" min="1" max="50">
+                        </div>
+                        <div class="form-group">
+                            <label for="battery-minutes">Battery (mins)</label>
+                            <input type="number" id="battery-minutes" value="30" min="5" max="120">
+                        </div>
+                    </div>
+
+
+
+                    <button type="submit" id="generate-btn" class="cyber-button">
+                        <span class="btn-text">INITIALIZE MISSION AI</span>
+                        <span class="btn-glitch"></span>
+                    </button>
+                    <!-- OPTIMIZE BUTTON -->
+                    <button type="button" id="optimize-btn" class="cyber-button" style="margin-top: 15px; display: none; filter: hue-rotate(90deg);">
+                        <span class="btn-text">OPTIMIZE TRAJECTORY</span>
+                        <span class="btn-glitch"></span>
+                    </button>
+                </form>
+            </section>
+
+            <!-- RIGHT PANEL: DASHBOARD -->
+            <section class="dashboard-panel">
+                <div class="dashboard-grid">
+                    <!-- MAP VISUALIZER -->
+                    <div class="glass-panel visualizer-panel">
+                        <div class="panel-header">
+                            <h2>Trajectory Visualizer</h2>
+                            <span class="coordinates" id="vis-coords">3D SPACE MAPPED</span>
+                        </div>
+                        <div class="canvas-container">
+                            <div id="map" style="width: 100%; height: 100%; z-index: 1;"></div>
+                        </div>
+                    </div>
+
+                    <!-- REPORT CARDS -->
+                    <div class="glass-panel summary-panel">
+                        <h2>Mission Summary</h2>
+                        <div id="summary-content" class="mono-text typing-text">Awaiting mission data...</div>
+                    </div>
+
+                    <div class="glass-panel metrics-panel">
+                        <h2>Energy & Feasibility</h2>
+                        <div class="metrics-grid">
+                            <div class="metric-box">
+                                <span class="label">Battery Est.</span>
+                                <span class="value" id="val-battery">--%</span>
+                            </div>
+                            <div class="metric-box">
+                                <span class="label">Risk</span>
+                                <span class="value" id="val-risk">--</span>
+                            </div>
+                            <div class="metric-box">
+                                <span class="label">Time (m)</span>
+                                <span class="value" id="val-time">--</span>
+                            </div>
+                            <div class="metric-box">
+                                <span class="label">Feasible</span>
+                                <span class="value" id="val-feasible">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- JSON OUTPUT -->
+                    <div class="glass-panel code-panel">
+                        <h2>Raw Flight Plan (JSON)</h2>
+                        <pre><code id="json-output">// Plan telemetry goes here...</code></pre>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <!-- LOADING OVERLAY -->
+        <div id="loading-overlay" class="hidden">
+            <div class="spinner"></div>
+            <div class="loading-text">GENERATING ANTI-GRAVITY FLIGHT PATH...</div>
+        </div>
+
+        <div id="toast-container" class="toast-container"></div>
+    </div>
+
+    <script src="/script.js"></script>
+</body>
+</html>

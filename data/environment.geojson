@@ -1,0 +1,100 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "boundary",
+        "name": "Operational Area"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [76.9550, 11.0200],
+            [76.9620, 11.0200],
+            [76.9620, 11.0260],
+            [76.9550, 11.0260],
+            [76.9550, 11.0200]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "river",
+        "name": "Noyyal River Section"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [76.9550, 11.0225],
+            [76.9620, 11.0225],
+            [76.9620, 11.0232],
+            [76.9550, 11.0232],
+            [76.9550, 11.0225]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "building",
+        "name": "Industrial Complex"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [76.9575, 11.0240],
+            [76.9590, 11.0240],
+            [76.9590, 11.0248],
+            [76.9575, 11.0248],
+            [76.9575, 11.0240]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "no_fly_zone",
+        "name": "Restricted Military Zone"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [76.9600, 11.0250],
+            [76.9615, 11.0250],
+            [76.9615, 11.0260],
+            [76.9600, 11.0260],
+            [76.9600, 11.0250]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "vegetation",
+        "name": "Dense Tree Cluster"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [76.9555, 11.0205],
+            [76.9565, 11.0205],
+            [76.9565, 11.0215],
+            [76.9555, 11.0215],
+            [76.9555, 11.0205]
+          ]
+        ]
+      }
+    }
+  ]
+}

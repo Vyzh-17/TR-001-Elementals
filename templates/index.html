@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="AI-powered autonomous drone mission planner with real-time path visualization and obstacle avoidance">
+    <title>AeroSync — Autonomous Drone Mission Planner</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Leaflet Draw CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+
+    <!-- App CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+
+    <!-- ===== HEADER ===== -->
+    <header id="app-header">
+        <div class="header-inner">
+            <div class="logo-group">
+                <div class="logo-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                        <path d="M2 17l10 5 10-5" />
+                        <path d="M2 12l10 5 10-5" />
+                    </svg>
+                </div>
+                <h1 class="logo-text">AeroSync</h1>
+                <span class="logo-badge">v2.0</span>
+            </div>
+            <div class="header-status" id="header-status">
+                <span class="status-dot"></span>
+                <span class="status-text">System Ready</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- ===== COMMAND BAR ===== -->
+    <section id="command-section">
+        <div class="command-container">
+            <div class="command-label">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+                    <line x1="4" y1="22" x2="4" y2="15" />
+                </svg>
+                <span>Mission Command</span>
+            </div>
+            <form id="command-form" autocomplete="off">
+                <div class="input-wrapper">
+                    <input type="text" id="command-input" placeholder="e.g. Survey the area at 30m and avoid river"
+                        autocomplete="off" spellcheck="false">
+                    <button type="submit" id="submit-btn">
+                        <span class="btn-text">Plan Mission</span>
+                        <svg class="btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2.5">
+                            <line x1="5" y1="12" x2="19" y2="12" />
+                            <polyline points="12 5 19 12 12 19" />
+                        </svg>
+                        <div class="btn-loader" style="display:none;">
+                            <div class="spinner"></div>
+                        </div>
+                    </button>
+                </div>
+            </form>
+            <div class="example-commands" id="example-commands">
+                <span class="example-label">Try:</span>
+                <button class="example-chip" data-cmd="Survey the area at 30m and avoid river">Survey at 30m, avoid
+                    river</button>
+                <button class="example-chip" data-cmd="Patrol the perimeter at 50m">Patrol perimeter 50m</button>
+                <button class="example-chip" data-cmd="Scan at 20m avoiding building and river">Scan 20m, avoid building
+                    & river</button>
+                <button class="example-chip" data-cmd="Map the region at 40m">Map region 40m</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main id="main-content">
+        <!-- Map Panel -->
+        <div class="map-panel" id="map-panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
+                        <line x1="8" y1="2" x2="8" y2="18" />
+                        <line x1="16" y1="6" x2="16" y2="22" />
+                    </svg>
+                    <span>Mission Map</span>
+                </div>
+                <div class="draw-toolbar" id="draw-toolbar">
+                    <button class="draw-btn" id="draw-boundary-btn" title="Draw operational boundary">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" />
+                        </svg>
+                        <span>Draw Area</span>
+                    </button>
+                    <button class="draw-btn" id="draw-obstacle-btn" title="Draw obstacle zone">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" />
+                        </svg>
+                        <span>Draw Obstacle</span>
+                    </button>
+                    <button class="draw-btn danger-btn" id="clear-all-btn" title="Clear all drawings">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                        </svg>
+                        <span>Clear</span>
+                    </button>
+                </div>
+                <div class="map-legend" id="map-legend">
+                    <span class="legend-item"><span class="legend-color" style="background:#00e5ff;"></span>Path</span>
+                    <span class="legend-item"><span class="legend-color" style="background:#ff5252;"></span>River</span>
+                    <span class="legend-item"><span class="legend-color"
+                            style="background:#ff9800;"></span>Building</span>
+                    <span class="legend-item"><span class="legend-color"
+                            style="background:#f44336;"></span>No-Fly</span>
+                    <span class="legend-item"><span class="legend-color"
+                            style="background:#4caf50;"></span>Vegetation</span>
+                </div>
+            </div>
+            <!-- Draw mode instruction banner -->
+            <div class="draw-banner" id="draw-banner" style="display:none;">
+                <span class="draw-banner-icon">✏️</span>
+                <span class="draw-banner-text" id="draw-banner-text">Click on the map to draw points. Double-click to
+                    finish.</span>
+                <button class="draw-banner-cancel" id="draw-cancel-btn">Cancel</button>
+            </div>
+            <div id="map"></div>
+        </div>
+
+        <!-- Mission Panel -->
+        <div class="mission-panel" id="mission-panel">
+            <!-- Draw State Info -->
+            <div class="result-card draw-info-card" id="draw-info-card">
+                <div class="card-header">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                        <circle cx="12" cy="10" r="3" />
+                    </svg>
+                    <span>Area Setup</span>
+                </div>
+                <div class="card-body">
+                    <div class="draw-status-row">
+                        <span class="draw-status-label">Boundary:</span>
+                        <span class="draw-status-value" id="boundary-status">Not drawn</span>
+                    </div>
+                    <div class="draw-status-row">
+                        <span class="draw-status-label">Obstacles:</span>
+                        <span class="draw-status-value" id="obstacle-status">0 zones</span>
+                    </div>
+                    <div class="draw-status-row">
+                        <span class="draw-status-label">OSM Data:</span>
+                        <span class="draw-status-value" id="osm-fetch-status">Draw boundary to fetch</span>
+                    </div>
+                    <p class="draw-help-text">
+                        1. Click <strong>Draw Area</strong> to define your operational boundary<br>
+                        2. Click <strong>Draw Obstacle</strong> to mark zones to avoid<br>
+                        3. Type a command and click <strong>Plan Mission</strong>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state" id="empty-state">
+                <div class="empty-icon">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"
+                        opacity="0.4">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                        <path d="M2 17l10 5 10-5" />
+                        <path d="M2 12l10 5 10-5" />
+                    </svg>
+                </div>
+                <p class="empty-title">No Active Mission</p>
+                <p class="empty-sub">Draw your area on the map, then enter a command</p>
+            </div>
+
+            <!-- Mission Results (hidden initially) -->
+            <div class="mission-results" id="mission-results" style="display:none;">
+
+                <!-- Validation Status -->
+                <div class="result-card status-card" id="status-card">
+                    <div class="status-banner" id="status-banner">
+                        <div class="status-icon" id="status-icon"></div>
+                        <div class="status-info">
+                            <span class="status-label" id="status-label">MISSION STATUS</span>
+                            <span class="status-value" id="status-value">Checking...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Parsed Mission -->
+                <div class="result-card" id="parsed-card">
+                    <div class="card-header">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <polyline points="16 18 22 12 16 6" />
+                            <polyline points="8 6 2 12 8 18" />
+                        </svg>
+                        <span>Parsed Command</span>
+                    </div>
+                    <div class="card-body" id="parsed-body"></div>
+                </div>
+
+                <!-- Stats -->
+                <div class="result-card" id="stats-card">
+                    <div class="card-header">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
+                            <path d="M22 12A10 10 0 0 0 12 2v10z" />
+                        </svg>
+                        <span>Mission Statistics</span>
+                    </div>
+                    <div class="card-body stats-grid" id="stats-body"></div>
+                </div>
+
+                <!-- Warnings / Errors -->
+                <div class="result-card" id="alerts-card" style="display:none;">
+                    <div class="card-header">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path
+                                d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                            <line x1="12" y1="9" x2="12" y2="13" />
+                            <line x1="12" y1="17" x2="12.01" y2="17" />
+                        </svg>
+                        <span>Alerts</span>
+                    </div>
+                    <div class="card-body" id="alerts-body"></div>
+                </div>
+
+                <!-- Waypoints Preview -->
+                <div class="result-card" id="waypoints-card">
+                    <div class="card-header">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="10" r="3" />
+                            <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 7 8 11.7z" />
+                        </svg>
+                        <span>Waypoints</span>
+                        <span class="waypoint-count" id="waypoint-count">0</span>
+                    </div>
+                    <div class="card-body waypoints-list" id="waypoints-body"></div>
+                </div>
+
+                <!-- Export -->
+                <div class="result-card" id="export-card">
+                    <div class="card-header">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="7 10 12 15 17 10" />
+                            <line x1="12" y1="15" x2="12" y2="3" />
+                        </svg>
+                        <span>Export</span>
+                    </div>
+                    <div class="card-body export-actions">
+                        <button class="export-btn" id="export-json-btn">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <polyline points="14 2 14 8 20 8" />
+                            </svg>
+                            Download Mission JSON
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ===== Obstacle Label Modal ===== -->
+    <div class="modal-overlay" id="obstacle-modal" style="display:none;">
+        <div class="modal-card">
+            <div class="modal-header">Label this obstacle</div>
+            <div class="modal-body">
+                <label class="modal-label">Obstacle Type:</label>
+                <div class="obstacle-type-grid" id="obstacle-type-grid">
+                    <button class="obstacle-type-btn" data-type="river" data-color="#42a5f5">🌊 River / Water</button>
+                    <button class="obstacle-type-btn" data-type="building" data-color="#ff9800">🏢 Building</button>
+                    <button class="obstacle-type-btn" data-type="no_fly_zone" data-color="#f44336">🚫 No-Fly
+                        Zone</button>
+                    <button class="obstacle-type-btn" data-type="vegetation" data-color="#66bb6a">🌳 Vegetation</button>
+                    <button class="obstacle-type-btn" data-type="road" data-color="#9e9e9e">🛣️ Road</button>
+                    <button class="obstacle-type-btn" data-type="powerline" data-color="#ffeb3b">⚡ Powerline</button>
+                </div>
+                <label class="modal-label" style="margin-top:12px;">Name (optional):</label>
+                <input type="text" id="obstacle-name-input" class="modal-input" placeholder="e.g. Noyyal River">
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" id="obstacle-cancel-btn">Cancel</button>
+                <button class="modal-btn confirm" id="obstacle-confirm-btn">Add Obstacle</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== SCRIPTS ===== -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+    <script src="/static/js/map.js"></script>
+    <script src="/static/js/ui.js"></script>
+    <script src="/static/js/app.js"></script>
+
+</body>
+
+</html>

@@ -53,6 +53,18 @@ export class MissionUI {
         document.getElementById('validation-panel').classList.remove('hidden');
     }
 
+    static updateEnergyMetrics(usage, savings) {
+        const panel = document.getElementById('metrics-panel');
+        if (usage) {
+            document.getElementById('val-battery').innerText = `${usage}%`;
+            document.getElementById('val-battery').style.color = usage > 80 ? '#ef4444' : (usage > 50 ? '#f59e0b' : '#00fa9a');
+        }
+        if (savings) {
+            document.getElementById('val-savings').innerText = `${savings}%`;
+        }
+        panel.classList.remove('hidden');
+    }
+
     static setPlanningState(isPlanning) {
         const btn = document.getElementById('generate-mission-btn');
         if (isPlanning) {

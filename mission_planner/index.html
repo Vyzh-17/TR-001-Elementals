@@ -8,7 +8,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <!-- Leaflet mapping -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
-    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/style.css">
 </head>
 <body class="dark-mode">
     <div id="app-container">
@@ -81,7 +83,29 @@
                 <div id="validation-report"></div>
             </section>
 
-            <div id="export-controls" class="export-section hidden">
+            <section id="metrics-panel" class="validation-section hidden">
+                <div class="section-title"><span>Energy Diagnostics</span></div>
+                <div class="metrics-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div class="metric-box" style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
+                        <span style="font-size: 0.6rem; color: var(--text-secondary);">BATTERY USED</span>
+                        <div id="val-battery" class="value" style="font-family: 'Share Tech Mono'; font-size: 1.2rem; color: var(--accent-cyan);">--%</div>
+                    </div>
+                    <div class="metric-box" style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
+                        <span style="font-size: 0.6rem; color: var(--text-secondary);">ENERGY SAVINGS</span>
+                        <div id="val-savings" class="value" style="font-family: 'Share Tech Mono'; font-size: 1.2rem; color: var(--success);">0%</div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="json-viewer-section" class="json-section hidden">
+                <div class="section-title"><span>Mission Intel JSON</span></div>
+                <div class="json-container">
+                    <pre id="json-display"></pre>
+                </div>
+            </section>
+
+            <div id="export-controls" class="export-section hidden" style="margin-top: 2rem;">
+                <button id="optimize-mission-btn" class="cyber-btn" style="width: 100%; padding: 12px; margin-bottom: 10px; background: linear-gradient(45deg, #00fa9a, #00b8d4); color: #000; border: none; font-weight: 800; border-radius: 8px; cursor: pointer; display: none;">APPLY ENERGY OPTIMIZATION</button>
                 <button id="start-simulation-btn" class="accent-btn">Execute Mission Path</button>
                 <button id="export-mavlink-btn" class="secondary-btn">Export Plan</button>
             </div>
@@ -90,6 +114,7 @@
         <!-- Main Map Area -->
         <main id="main-interface">
             <div id="map"></div>
+            <div class="grid-overlay"></div>
             
             <div class="map-overlays">
                 <div class="status-badge" id="mission-status-badge">
@@ -122,7 +147,6 @@
     </div>
 
     <!-- Scripts using ESM Modules -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-    <script src="app.js" type="module"></script>
+    <script src="scripts/app.js" type="module"></script>
 </body>
 </html>

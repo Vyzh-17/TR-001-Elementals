@@ -5,13 +5,18 @@
 export const MAP_DEFAULTS = {
     center: [10.0, 78.0],
     zoom: 14,
-    dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    dark: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', // Switched to standard for debugging
     satellite: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
 };
 
 export class MissionMap {
     constructor(elementId) {
-        this.map = L.map(elementId, { zoomControl: false, attributionControl: false }).setView(MAP_DEFAULTS.center, MAP_DEFAULTS.zoom);
+        console.log("Initializing AeroSync Map Engine on element:", elementId);
+        this.map = L.map(elementId, { 
+            zoomControl: false, 
+            attributionControl: false,
+            fadeAnimation: false 
+        }).setView(MAP_DEFAULTS.center, MAP_DEFAULTS.zoom);
         
         this.layers = {
             base: L.tileLayer(MAP_DEFAULTS.dark).addTo(this.map),
@@ -21,14 +26,19 @@ export class MissionMap {
             waypoints: L.layerGroup().addTo(this.map)
         };
 
+        // System Check Marker
+        L.marker(MAP_DEFAULTS.center).addTo(this.map).bindPopup("Map Engine Active");
+
         this.satelliteLayer = L.tileLayer(MAP_DEFAULTS.satellite);
     }
 
-    drawPath(waypoints, isValid = true) {
+    drawPath(waypoints, isValid = true, colorOverride = null) {
         if (this.layers.path) this.map.removeLayer(this.layers.path);
         
+        const pathColor = colorOverride || (isValid ? '#00e5ff' : '#ef4444');
+        
         this.layers.path = L.polyline(waypoints, {
-            color: isValid ? '#00e5ff' : '#ef4444', 
+            color: pathColor, 
             weight: 4,
             opacity: 0.9,
             dashArray: isValid ? '10, 10' : '5, 5'
@@ -50,14 +60,36 @@ export class MissionMap {
         });
     }
 
-    renderWaypoints(waypoints, showLabels) {
+    renderWaypoints(waypoints, showLabels, actions = []) {
         this.layers.waypoints.clearLayers();
         if (!showLabels) return;
 
         waypoints.forEach((wp, i) => {
-            L.circleMarker(wp, { radius: 4, color: '#fff' })
-                .addTo(this.layers.waypoints)
-                .bindTooltip(`${i+1}`, { permanent: true, direction: 'top', className: 'wp-label' });
+            const action = actions[i] || 'Transit';
+            let color = '#fff';
+            
+            if (action.includes('ascend')) color = '#00e5ff';
+            else if (action.includes('scan')) color = '#00fa9a';
+            else if (action.includes('return')) color = '#ef4444';
+
+            const marker = L.circleMarker(wp, { 
+                radius: action.includes('scan') ? 10 : 5, 
+                color: color, 
+                weight: 2,
+                fillOpacity: 0.7 
+            }).addTo(this.layers.waypoints);
+
+            marker.bindPopup(`
+                <div style="font-family: 'Share Tech Mono'; color: #000; min-width: 120px;">
+                    <div style="border-bottom: 1px solid #ddd; margin-bottom: 5px; font-weight: 800;">POINT ${i+1}</div>
+                    <strong>ACT:</strong> ${action.toUpperCase()}<br>
+                    <strong>POS:</strong> ${wp[0].toFixed(4)}, ${wp[1].toFixed(4)}
+                </div>
+            `);
+
+            if (waypoints.length < 20) {
+                marker.bindTooltip(`${i+1}`, { permanent: false, direction: 'top' });
+            }
         });
     }
 

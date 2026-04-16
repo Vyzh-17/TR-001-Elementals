@@ -1,0 +1,17 @@
+{
+  "mission_type": "survey",
+  "area": "northern field perimeter",
+  "altitude": 30,
+  "speed": 8,
+  "constraints": {
+    "avoid": [
+      "power lines on the east side"
+    ],
+    "no_fly_zones": []
+  },
+  "actions": [
+    "takeoff",
+    "survey",
+    "landing"
+  ]
+}

@@ -22,7 +22,9 @@ export class MissionParser {
                     mission_description: naturalLanguage,
                     max_altitude: specs.maxAlt || 120,
                     max_speed: specs.speed || 15,
-                    battery_minutes: specs.batteryMins || 45
+                    battery_minutes: specs.batteryMins || 45,
+                    temperature: specs.temp || 25,
+                    humidity: specs.humidity || 40
                 })
             });
 

@@ -152,10 +152,14 @@ class AeroSyncApp {
         MissionUI.renderValidation(checks);
         
         if (missionIntel.energy) {
+            const envStr = `[Env: ${specs.temp}°C | ${specs.humidity}%]`;
+            const strategy = missionIntel.energy.optimization_notes || "Efficiency Optimized";
             MissionUI.updateEnergyMetrics(missionIntel.energy.estimated_usage_percentage, 0);
+            MissionUI.showAlert(`INTEL: ${envStr} | ${strategy}`, !this.currentMission.isValid);
         }
 
-        MissionUI.updateHUD(this.calculateTotalDistance(finalPath), cost.estTime, 100);
+        const dist = this.calculateTotalDistance(finalPath);
+        MissionUI.updateHUD(dist, cost.estTime, 100);
         document.getElementById('export-controls').classList.remove('hidden');
         document.getElementById('optimize-mission-btn').style.display = 'block';
         MissionUI.setPlanningState(false);
@@ -179,7 +183,7 @@ class AeroSyncApp {
             const finalPath = this.reroutePath(optWaypoints, this.nfz);
             
             this.currentMission.waypoints = finalPath;
-            this.missionMap.drawPath(finalPath, true, '#00fa9a');
+            this.missionMap.drawPath(finalPath, true, '#00ffa3');
             this.missionMap.renderWaypoints(finalPath, true, data.optimized_flight_plan.waypoints.map(w => w.action));
             MissionUI.updateEnergyMetrics(data.energy_comparison.optimized_usage_percentage, data.energy_comparison.savings_percentage);
             MissionUI.showStatus("Optimization Complete", 'normal');
@@ -193,7 +197,9 @@ class AeroSyncApp {
             maxAlt: parseInt(document.getElementById('max-alt').value),
             payload: parseFloat(document.getElementById('payload').value),
             batteryMins: parseInt(document.getElementById('battery-life').value),
-            speed: parseInt(document.getElementById('speed-set').value)
+            speed: parseInt(document.getElementById('speed-set').value),
+            temp: parseInt(document.getElementById('env-temp').value),
+            humidity: parseInt(document.getElementById('env-humid').value)
         };
     }
 

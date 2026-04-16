@@ -2,8 +2,10 @@ import os
 import json
 from flask import Flask, request, jsonify, send_from_directory
 import google.generativeai as genai
+from flask_cors import CORS
 
 app = Flask(__name__, static_folder='static')
+CORS(app) # Enable Cross-Origin Resource Sharing
 
 # Attempt to configure Gemini if environment variable is present
 api_key = os.environ.get("GEMINI_API_KEY")
@@ -37,10 +39,12 @@ Your task is to convert natural language mission descriptions into an optimized,
 - Plan an energy-efficient return path
 - Keep a minimum 20% battery reserve for safety
 
-## ⚠️ Constraints
+## ⚠️ Constraints & Environment
 - Do NOT exceed max altitude
 - Maintain at least 5m distance from obstacles
 - Avoid restricted airspace zones (if provided)
+- **Extreme Weather**: If temperature > 40°C or Humidity > 80%, recommend shorter segments to avoid motor overheating.
+- **Air Density**: Account for higher battery drain in extreme heat (lower lift).
 - Ensure full return-to-base capability
 - Abort or adjust mission if battery is insufficient
 
@@ -170,12 +174,17 @@ def plan_mission():
     max_speed = data.get('max_speed', 15)
     battery_minutes = data.get('battery_minutes', 30)
 
+    temperature = data.get('temperature', 25)
+    humidity = data.get('humidity', 40)
+
     user_input = f"""Mission Description: {mission_description}
 
 Drone Specifications:
 - Max Altitude: {max_altitude} meters
 - Max Speed: {max_speed} m/s
 - Battery Capacity: {battery_minutes} minutes
+- Temperature: {temperature}°C
+- Humidity: {humidity}%
 - Energy Consumption Model: Horizontal movement HIGH energy, Vertical LOW energy, Hovering NEGLIGIBLE energy.
 """
 
@@ -188,11 +197,11 @@ Drone Specifications:
             },
             "flight_plan": {
                 "waypoints": [
-                    {"lat": 0.0, "lon": 0.0, "alt": max_altitude * 0.1, "action": "ascend"},
-                    {"lat": 0.0, "lon": 0.0, "alt": max_altitude * 0.8, "action": "move"},
-                    {"lat": 0.001, "lon": 0.001, "alt": max_altitude * 0.8, "action": "scan"},
-                    {"lat": 0.001, "lon": 0.001, "alt": max_altitude * 0.2, "action": "hover"},
-                    {"lat": 0.0, "lon": 0.0, "alt": max_altitude * 0.1, "action": "return"}
+                    {"lat": 10.003, "lon": 78.003, "alt": max_altitude * 0.1, "action": "ascend"},
+                    {"lat": 10.005, "lon": 78.005, "alt": max_altitude * 0.8, "action": "move"},
+                    {"lat": 10.007, "lon": 78.007, "alt": max_altitude * 0.8, "action": "scan"},
+                    {"lat": 10.005, "lon": 78.005, "alt": max_altitude * 0.2, "action": "hover"},
+                    {"lat": 10.003, "lon": 78.003, "alt": max_altitude * 0.1, "action": "return"}
                 ],
                 "speed_profile": [{"segment": 1, "speed": max_speed * 0.5}]
             },

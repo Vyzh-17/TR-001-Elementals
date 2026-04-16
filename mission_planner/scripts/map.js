@@ -35,13 +35,16 @@ export class MissionMap {
     drawPath(waypoints, isValid = true, colorOverride = null) {
         if (this.layers.path) this.map.removeLayer(this.layers.path);
         
-        const pathColor = colorOverride || (isValid ? '#00e5ff' : '#ef4444');
+        // Premium Glow Dynamic Color Palette
+        const pathColor = colorOverride || (isValid ? '#00e5ff' : '#ff4757');
         
         this.layers.path = L.polyline(waypoints, {
             color: pathColor, 
-            weight: 4,
-            opacity: 0.9,
-            dashArray: isValid ? '10, 10' : '5, 5'
+            weight: 5,
+            opacity: 0.8,
+            lineJoin: 'round',
+            // Using a thinner dash for a professional 'fiber' look
+            dashArray: isValid ? null : '5, 10'
         }).addTo(this.map);
 
         this.map.fitBounds(this.layers.path.getBounds(), { padding: [50, 50] });

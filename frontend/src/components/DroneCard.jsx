@@ -4,8 +4,8 @@ import { Activity, Battery, Navigation, ArrowUp } from 'lucide-react';
 const DroneCard = ({ drone }) => {
   const getStatusClass = (status) => {
     switch (status.toLowerCase()) {
-      case 'warning': return 'status-warning';
-      case 'avoiding': return 'status-avoiding';
+      case 'in-region': return 'status-warning';
+      case 'optimized': return 'status-optimized';
       default: return 'status-normal';
     }
   };
@@ -29,15 +29,19 @@ const DroneCard = ({ drone }) => {
           <span className="mini-stat-value">{drone.speed.toFixed(1)} km/h</span>
         </div>
         <div className="mini-stat">
-          <span className="mini-stat-label">Battery</span>
+          <span className="mini-stat-label">Energy</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span className="mini-stat-value">{drone.battery.toFixed(1)}%</span>
-            <Battery size={10} color={drone.battery < 20 ? 'red' : 'var(--green)'} />
+            <span className="mini-stat-value">{drone.energy.toFixed(1)}%</span>
+            <Battery size={10} color={drone.energy < 20 ? 'red' : 'var(--green)'} />
           </div>
         </div>
         <div className="mini-stat">
-          <span className="mini-stat-label">Waypoint</span>
-          <span className="mini-stat-value">WP-{drone.waypoint.toString().padStart(3, '0')}</span>
+          <span className="mini-stat-label">Routing</span>
+          <span className="mini-stat-value">WP-{drone.currentPath.length}</span>
+        </div>
+        <div className="mini-stat" style={{ gridColumn: 'span 2', marginTop: '4px' }}>
+          <span className="mini-stat-label">Region</span>
+          <span className="mini-stat-value" style={{ color: 'var(--cyan)', fontSize: '0.75rem' }}>{drone.region}</span>
         </div>
       </div>
 
@@ -45,8 +49,8 @@ const DroneCard = ({ drone }) => {
         <div 
           style={{ 
             height: '100%', 
-            width: `${drone.battery}%`, 
-            background: drone.battery < 20 ? 'var(--red)' : 'var(--cyan)',
+            width: `${drone.energy}%`, 
+            background: drone.energy < 20 ? 'var(--red)' : 'var(--cyan)',
             transition: 'width 0.5s ease'
           }} 
         />

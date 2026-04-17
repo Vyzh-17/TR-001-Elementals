@@ -3,10 +3,11 @@ import { useDroneSimulation } from '../hooks/useDroneSimulation';
 import StatsPanel from './StatsPanel';
 import TacticalMap from './TacticalMap';
 import AlertPanel from './AlertPanel';
+import ClearancePanel from './ClearancePanel';
 import { Crosshair, ShieldAlert, Cpu } from 'lucide-react';
 
 const Dashboard = () => {
-  const { drones, alerts, decisions } = useDroneSimulation();
+  const { drones, alerts, decisions, replanEvents } = useDroneSimulation();
 
   return (
     <div className="dashboard-container">
@@ -48,7 +49,10 @@ const Dashboard = () => {
       <main className="main-layout">
         <StatsPanel drones={drones} />
         <TacticalMap drones={drones} />
-        <AlertPanel alerts={alerts} decisions={decisions} />
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '1px', background: 'var(--border-muted)', overflow: 'hidden' }}>
+          <AlertPanel alerts={alerts} decisions={decisions} />
+          <ClearancePanel replanEvents={replanEvents} />
+        </div>
       </main>
 
       <footer style={{ height: '32px', background: 'var(--bg-panel)', borderTop: '1px solid var(--border-muted)', display: 'flex', alignItems: 'center', px: '24px', justifyContent: 'space-between', padding: '0 24px' }}>

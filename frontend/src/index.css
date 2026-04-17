@@ -1,17 +1,17 @@
 :root {
-  --bg-deep: #05070a;
-  --bg-panel: #0c0f14;
-  --bg-elevated: #151921;
-  --border-muted: #1e2631;
-  --border-glow: #00f2ff44;
+  --bg-deep: #030a12;
+  --bg-panel: #07101b;
+  --bg-elevated: #0d1b2a;
+  --border-muted: #162a42;
+  --border-glow: #00e5ff44;
   
-  --cyan: #00f2ff;
-  --red: #ff003c;
-  --yellow: #ffcc00;
-  --green: #00ff9d;
+  --cyan: #00e5ff;
+  --red: #ff3366;
+  --yellow: #ffcf33;
+  --green: #00fa9a;
   
-  --text-main: #e0e6ed;
-  --text-muted: #7f8ea3;
+  --text-main: #e8f0fe;
+  --text-muted: #8ab4f8;
   
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
@@ -95,7 +95,7 @@ header {
 
 .main-layout {
   display: grid;
-  grid-template-columns: 350px 1fr 300px;
+  grid-template-columns: 350px 1fr 380px;
   flex: 1;
   gap: 1px;
   background: var(--border-muted);
@@ -167,6 +167,8 @@ header {
 .status-normal { background: rgba(0, 255, 157, 0.1); color: var(--green); }
 .status-warning { background: rgba(255, 204, 0, 0.1); color: var(--yellow); }
 .status-avoiding { background: rgba(255, 0, 60, 0.1); color: var(--red); }
+.status-optimized { background: rgba(0, 242, 255, 0.1); color: var(--cyan); }
+.status-replanning { background: rgba(255, 204, 0, 0.1); color: var(--yellow); }
 
 .drone-stats-grid {
   display: grid;

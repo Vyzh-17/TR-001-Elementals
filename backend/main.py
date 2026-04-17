@@ -8,6 +8,7 @@ app = Flask(__name__, static_folder='static')
 CORS(app) # Enable Cross-Origin Resource Sharing
 
 # Attempt to configure Gemini if environment variable is present
+# Integrated User API Key
 api_key = os.environ.get("GEMINI_API_KEY")
 if api_key:
     genai.configure(api_key=api_key)
@@ -221,7 +222,7 @@ Drone Specifications:
         })
 
     try:
-        model = genai.GenerativeModel(model_name='gemini-2.5-flash',
+        model = genai.GenerativeModel(model_name='gemini-1.5-flash',
                                       system_instruction=SYSTEM_PROMPT,
                                       generation_config={"response_mime_type": "application/json"})
         response = model.generate_content(user_input)
@@ -307,7 +308,7 @@ def optimize_trajectory():
         })
 
     try:
-        model = genai.GenerativeModel(model_name='gemini-2.5-flash',
+        model = genai.GenerativeModel(model_name='gemini-1.5-flash',
                                       system_instruction=OPTIMIZE_SYSTEM_PROMPT,
                                       generation_config={"response_mime_type": "application/json"})
         response = model.generate_content(user_input)
@@ -341,4 +342,6 @@ def optimize_trajectory():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    # Use the PORT environment variable provided by Render
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)

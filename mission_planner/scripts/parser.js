@@ -1,11 +1,8 @@
-/**
- * AeroSync Intelligence System - AI Mission Parser (Final Integrated Version)
- * Uses the reference data-flow structure with the Gemini Energy backend.
- */
+import { CONFIG } from './config.js';
 
 export class MissionParser {
     constructor() {
-        this.apiEndpoint = 'http://localhost:5000/api/plan';
+        this.apiEndpoint = `${CONFIG.API_BASE}/api/plan`;
     }
 
     /**

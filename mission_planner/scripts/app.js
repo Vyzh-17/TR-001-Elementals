@@ -1,6 +1,7 @@
 import { MissionMap } from './map.js';
 import { MissionUI } from './ui.js';
 import { MissionParser } from './parser.js';
+import { CONFIG } from './config.js';
 
 /**
  * AeroSync Pro | Intelligence-Driven Mission Command
@@ -120,13 +121,21 @@ class AeroSyncApp {
 
         let center = [10.0, 78.0];
         try {
-            const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(missionIntel.area)}&format=json&limit=1`);
-            const data = await res.json();
-            if (data.length > 0) {
-                center = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
-                this.missionMap.map.setView(center, 15);
+            // Added User-Agent to comply with Nominatim policy and avoid 403 errors
+            if (missionIntel.area && missionIntel.area !== "Identified Target" && missionIntel.area !== "Target Area") {
+                const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(missionIntel.area)}&format=json&limit=1`, {
+                    headers: { 'User-Agent': 'AeroSync-Drone-Planner/1.0' }
+                });
+                const data = await res.json();
+                if (data.length > 0) {
+                    center = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+                    this.missionMap.map.setView(center, 15);
+                    console.log(`OSM: Mission centered on ${missionIntel.area} at ${center}`);
+                }
             }
-        } catch (e) { console.warn("Geocoding failed."); }
+        } catch (e) { 
+            console.warn("OSM Geocoding: Policy mismatch or network error.", e); 
+        }
 
         const strategy = missionIntel.mission_type === 'survey' ? 'coverage' : 'perimeter';
         const rawPath = missionIntel.waypoints || this.generateSmartPath(center, strategy);
@@ -159,7 +168,10 @@ class AeroSyncApp {
         }
 
         const dist = this.calculateTotalDistance(finalPath);
-        MissionUI.updateHUD(dist, cost.estTime, 100);
+        const initialBattery = 100;
+        MissionUI.updateHUD(dist, cost.estTime, initialBattery);
+        this.currentBattery = initialBattery; // Initialize for simulation
+        
         document.getElementById('export-controls').classList.remove('hidden');
         document.getElementById('optimize-mission-btn').style.display = 'block';
         MissionUI.setPlanningState(false);
@@ -170,16 +182,16 @@ class AeroSyncApp {
         MissionUI.showStatus("Optimizing for Efficiency...", 'simulation');
         
         try {
-            const res = await fetch('http://localhost:5000/api/optimize', {
+            const res = await fetch(`${CONFIG.API_BASE}/api/optimize`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    flight_plan: { waypoints: this.currentMission.waypoints.map(w => ({lat: w[0], lon: w[1], action: 'move', alt: 30})) },
+                    flight_plan: { waypoints: this.currentMission.waypoints.map(w => ({lat: w[0], lon: w[1], action: 'move', alt: w[2] || 30})) },
                     battery_minutes: this.getSpecs().batteryMins
                 })
             });
             const data = await res.json();
-            const optWaypoints = data.optimized_flight_plan.waypoints.map(w => [w.lat, w.lon]);
+            const optWaypoints = data.optimized_flight_plan.waypoints.map(w => [w.lat, w.lon, w.alt || 30]);
             const finalPath = this.reroutePath(optWaypoints, this.nfz);
             
             this.currentMission.waypoints = finalPath;
@@ -210,9 +222,28 @@ class AeroSyncApp {
     }
 
     calculateMissionCost(path, payload) {
+        const specs = this.getSpecs();
+        let totalCost = payload * 0.5; // Fixed payload penalty
+        
+        for (let i = 1; i < path.length; i++) {
+            totalCost += this.calculateSegmentCost(path[i-1], path[i], payload, specs);
+        }
+        
         const d = this.calculateTotalDistance(path);
-        const s = parseInt(document.getElementById('speed-set').value);
-        return { batteryUsed: (d * 3) + (payload * 0.5), estTime: (d * 1000) / s };
+        const s = specs.speed || 8;
+        return { batteryUsed: totalCost, estTime: (d * 1000) / s };
+    }
+
+    calculateSegmentCost(p1, p2, payload, specs) {
+        const start = L.latLng(p1[0], p1[1]);
+        const end = L.latLng(p2[0], p2[1]);
+        const distKm = start.distanceTo(end) / 1000;
+        const altChange = Math.abs((p2[2] || 30) - (p1[2] || 30));
+
+        // Unified Brain Logic:
+        // Horizontal: 3.5% per km (increased slightly for real-world drag)
+        // Vertical: 0.05% per meter (low cost due to anti-gravity)
+        return (distKm * 3.5) + (altChange * 0.05);
     }
 
     generateSmartPath(center, strategy) {
@@ -249,15 +280,39 @@ class AeroSyncApp {
             const heading = (Math.atan2(end.lng - start.lng, end.lat - start.lat) * 180 / Math.PI);
             const startTime = performance.now();
 
+            // Calculate total segment cost to deplete it smoothly
+            const segmentCost = this.calculateSegmentCost(
+                path[currentIdx], 
+                path[currentIdx+1], 
+                parseFloat(document.getElementById('payload').value), 
+                this.getSpecs()
+            );
+
             const frame = (now) => {
                 const progress = Math.min((now - startTime) / duration, 1);
+                const frameProgress = progress - (this.lastProgress || 0);
+                this.lastProgress = progress;
+
                 const currentPos = [start.lat + (end.lat-start.lat)*progress, start.lng + (end.lng-start.lng)*progress];
                 
+                // Dynamic Battery Reduction
+                this.currentBattery -= segmentCost * (frameProgress > 0 ? frameProgress : 0);
+                
                 this.missionMap.updateDroneMarker(currentPos, heading);
+                MissionUI.updateHUD(
+                    this.calculateTotalDistance(path.slice(currentIdx).map((p, i) => i === 0 ? currentPos : p)), 
+                    (duration * (1 - progress)) / 1000, 
+                    Math.max(0, this.currentBattery)
+                );
                 
                 if (progress < 1) requestAnimationFrame(frame);
-                else { currentIdx++; animate(); }
+                else { 
+                    this.lastProgress = 0;
+                    currentIdx++; 
+                    animate(); 
+                }
             };
+            this.lastProgress = 0;
             requestAnimationFrame(frame);
         };
         animate();

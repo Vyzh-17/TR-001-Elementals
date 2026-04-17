@@ -4,7 +4,7 @@ from flask import Flask, request, jsonify, send_from_directory
 import google.generativeai as genai
 from flask_cors import CORS
 
-app = Flask(__name__, static_folder='static')
+app = Flask(__name__, static_folder='../mission_planner')
 CORS(app) # Enable Cross-Origin Resource Sharing
 
 # Attempt to configure Gemini if environment variable is present
